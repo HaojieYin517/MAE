@@ -121,6 +121,8 @@ def get_args_parser():
 
 
 def main(args):
+    args.distributed = torch.cuda.device_count() > 1
+
     misc.init_distributed_mode(args)
 
     print('job dir: {}'.format(os.path.dirname(os.path.realpath(__file__))))
@@ -147,16 +149,18 @@ def main(args):
     dataset_train = UnlabeledImageDataset(args.data_path, transform=transform_train)
     print(dataset_train)
 
-    if False:  # args.distributed:
+    if args.distributed:
         num_tasks = misc.get_world_size()
         global_rank = misc.get_rank()
         sampler_train = torch.utils.data.DistributedSampler(
-            dataset_train, num_replicas=num_tasks, rank=global_rank, shuffle=True
+            dataset_train,
+            num_replicas=num_tasks,
+            rank=global_rank,
+            shuffle=True
         )
-        print("Sampler_train = %s" % str(sampler_train))
     else:
         sampler_train = torch.utils.data.RandomSampler(dataset_train)
-    global_rank = 0
+        global_rank = 0
 
 
     if global_rank == 0 and args.log_dir is not None:
@@ -195,7 +199,7 @@ def main(args):
     print("effective batch size: %d" % eff_batch_size)
 
     if args.distributed:
-        model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu], find_unused_parameters=True)
+        model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu], find_unused_parameters=False)
         model_without_ddp = model.module
     
     # following timm: set wd as 0 for bias and norm layers

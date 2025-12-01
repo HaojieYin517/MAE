@@ -240,6 +240,22 @@ def mae_vit_small_patch8_dec512d8b(**kwargs):
     return model
 mae_vit_small_patch8 = mae_vit_small_patch8_dec512d8b
 
+def mae_vit_base_patch8_dec512d8b(**kwargs):
+    model = MaskedAutoencoderViT(
+        img_size=96,              
+        patch_size=8,
+        embed_dim=704,            
+        depth=12,
+        num_heads=11,              
+        decoder_embed_dim=512,
+        decoder_depth=8,
+        decoder_num_heads=16,
+        mlp_ratio=4,
+        norm_layer=partial(nn.LayerNorm, eps=1e-6),
+        **kwargs)
+    return model
+mae_vit_base_patch8 = mae_vit_base_patch8_dec512d8b
+
 
 def mae_vit_base_patch16_dec512d8b(**kwargs):
     model = MaskedAutoencoderViT(
